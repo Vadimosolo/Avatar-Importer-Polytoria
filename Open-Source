@@ -1,0 +1,141 @@
+local addonObject = Addons:Register("AvatarImporter")
+addonObject.AddonName = "Avatar Importer"
+local IDbutton = addonObject:CreateToolItem("Add Player by Username") :: AddonToolItem
+local windowClone = nil 
+
+local focused = false
+
+local lastid = 382741
+
+local MainFont1 = BuiltInFontAsset.New()
+MainFont1.FontPreset = Enums.FontPreset.Montserrat
+MainFont1.FontWeight = Enums.FontWeight.ExtraBold
+
+local MainFont2 = BuiltInFontAsset.New()
+MainFont2.FontPreset = Enums.FontPreset.Montserrat
+MainFont2.FontWeight = Enums.FontWeight.Bold
+
+local IconSetup = PTImageAsset.New()
+IconSetup.ImageType = Enums.ImageType.UserAvatar
+
+local Main = nil
+local PlrInput = nil
+local Icon = nil
+
+local NPCButton = nil
+local CharButton = nil
+
+function UpdateInfo()
+	if PlrInput.Text ~= nil then
+		local result = json:parse(Http:GetAsync("https://api.polytoria.com/v1/users/find?username="..PlrInput.Text)).id
+		if result ~= nil then
+			IconSetup.ImageID = result
+			Icon.Image = IconSetup
+		else
+			UpdateInfo()
+		end
+	end
+end
+
+
+
+IDbutton.Pressed:Connect(function()  
+    windowClone = Instance.New("GUI")
+	windowClone.Parent = CreatorGUI
+	--Setup WindowFrame
+	Main = Instance.New("UIView", windowClone)
+	Main.Name = "Main"
+	Main.BorderColor = Color.FromHex("ffffff")
+	Main.Color = Color.FromHex("0000007d")
+	Main.BorderWidth = 2.0
+	Main.CornerRadius = 20.0
+	Main.SizeRelative = Vector2.New(0.25, 0.5)
+	Main.SizeOffset = Vector2.New(0, 0)
+	
+	--Setup PlrInput
+	PlrInput = Instance.New("UITextInput", Main)
+	PlrInput.Name = "PlrInput"
+	PlrInput.Text = "Vadimosolo"
+	PlrInput.TextColor = Color.FromHex("ffffff")
+	PlrInput.JustifyText = Enums.HorizontalAlignment.Center
+	PlrInput.Placeholder = "Player Username"
+	PlrInput.PlaceholderColor = Color.FromHex("ffffff80")
+	PlrInput.FontAsset = MainFont1
+	
+	PlrInput.BorderColor = Color.FromHex("000000")
+	PlrInput.Color = Color.FromHex("0000007d")
+	PlrInput.BorderWidth = 2.0
+	PlrInput.CornerRadius = 10.0
+	PlrInput.PositionRelative = Vector2.New(0.5, 0.4)
+	PlrInput.SizeRelative = Vector2.New(0.9, 0.2)
+	PlrInput.SizeOffset = Vector2.New(0, 0)
+	
+	--Setup Icon
+	Icon = Instance.New("UIImage", Main)
+	Icon.Name = "Icon"
+	Icon.StretchMode = Enums.ImageStretchMode.Centered
+	IconSetup.ImageID = 382741
+	Icon.Image = IconSetup
+	Icon.PositionRelative = Vector2.New(0.5, 0.75)
+	Icon.SizeRelative = Vector2.New(0.9, 0.4)
+	Icon.SizeOffset = Vector2.New(0, 0)
+	
+	--Setup NPCButton
+	NPCButton = Instance.New("UIButton", Main)
+	NPCButton.Name = "NPC"
+	NPCButton.Text = "Add as NPC"
+	NPCButton.TextColor = Color.FromHex("ffffff")
+	NPCButton.FontAsset = MainFont2
+	
+	NPCButton.BorderColor = Color.FromHex("ffffff")
+	NPCButton.Color = Color.FromHex("00000068")
+	NPCButton.BorderWidth = 2.0
+	NPCButton.CornerRadius = 25.0
+	
+	NPCButton.PositionRelative = Vector2.New(0.5, 0.225)
+	NPCButton.SizeRelative = Vector2.New(0.9, 0.1)
+	NPCButton.SizeOffset = Vector2.New(0, 0)
+	
+	--Setup CharButton
+	CharButton = Instance.New("UIButton", Main)
+	CharButton.Name = "Character"
+	CharButton.Text = "Add as Character"
+	CharButton.TextColor = Color.FromHex("ffffff")
+	CharButton.FontAsset = MainFont2
+	
+	CharButton.BorderColor = Color.FromHex("ffffff")
+	CharButton.Color = Color.FromHex("00000068")
+	CharButton.BorderWidth = 2.0
+	CharButton.CornerRadius = 25.0
+	
+	CharButton.PositionRelative = Vector2.New(0.5, 0.125)
+	CharButton.SizeRelative = Vector2.New(0.9, 0.1)
+	CharButton.SizeOffset = Vector2.New(0, 0)
+	
+	NPCButton.Clicked:Connect(function()
+		local NPC = Insert:DefaultNPC()
+		NPC.Parent = Environment
+		NPC.Position = Vector3.New(0, 6, 0)
+		print(json:parse(Http:GetAsync("https://api.polytoria.com/v1/users/find?username="..PlrInput.Text)).id)
+		NPC:LoadAppearance(json:parse(Http:GetAsync("https://api.polytoria.com/v1/users/find?username="..PlrInput.Text)).id)
+		windowClone:Destroy()
+	end)
+	CharButton.Clicked:Connect(function()
+		local Char = Insert:DefaultCharacter()
+		Char.Parent = Environment
+		Char.Position = Vector3.New(0, 6, 0)
+		print(json:parse(Http:GetAsync("https://api.polytoria.com/v1/users/find?username="..PlrInput.Text)).id)
+		Char:LoadAppearance(json:parse(Http:GetAsync("https://api.polytoria.com/v1/users/find?username="..PlrInput.Text)).id, true)
+		windowClone:Destroy()
+	end)
+	
+	while wait() do
+		if PlrInput.Text ~= lastid then
+			UpdateInfo()
+			lastid = PlrInput.Text
+		end
+	end
+	
+end) 
+
+
